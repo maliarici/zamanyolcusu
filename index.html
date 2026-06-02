@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Sıralama Etkinliği</title>
 
-  <link rel="icon" type="image/png" href="/zamanyolcusu/turkey.png?v=99">
-  <link rel="shortcut icon" type="image/png" href="/zamanyolcusu/turkey.png?v=99">
-  <link rel="apple-touch-icon" href="/zamanyolcusu/turkey.png?v=99">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2716%27 fill=%27%23e30a17%27/%3E%3Ccircle cx=%2742%27 cy=%2750%27 r=%2724%27 fill=%27white%27/%3E%3Ccircle cx=%2750%27 cy=%2750%27 r=%2719%27 fill=%27%23e30a17%27/%3E%3Cpolygon points=%2770,35 74,46 86,46 77,53 80,65 70,58 60,65 63,53 54,46 66,46%27 fill=%27white%27/%3E%3C/svg%3E">
 
   <style>
     :root {
@@ -23,92 +21,91 @@
     * { box-sizing: border-box; }
 
     html, body {
-      width: 100%;
-      height: 100dvh;
       margin: 0;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
       overscroll-behavior: none;
       -webkit-user-select: none;
       user-select: none;
+      -webkit-touch-callout: none;
     }
 
     body {
       font-family: Arial, Helvetica, sans-serif;
       background:
         linear-gradient(rgba(255,255,255,.18), rgba(255,255,255,.18)),
-        url("leo-futuristic-bg.png") center / cover no-repeat fixed;
+        url("leo-futuristic-bg.png") center / cover no-repeat fixed,
+        #e5e7eb;
       color: var(--text);
-      padding: 5px;
+      padding: 4px;
+      touch-action: none;
     }
 
     .wrap {
-      width: min(680px, calc(100vw - 10px));
-      max-width: 680px;
-      height: calc(100dvh - 10px);
+      width: min(680px, calc(100vw - 8px));
+      height: calc(var(--app-height, 100vh) - 8px);
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      position: relative;
-      z-index: 1;
+      gap: 3px;
     }
 
     .topbar {
-      height: 36px;
-      min-height: 36px;
+      height: 32px;
+      min-height: 32px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 6px;
-      flex: 0 0 36px;
+      gap: 5px;
+      flex: 0 0 32px;
     }
 
     .controls {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       align-items: center;
     }
 
     button {
       border: 0;
-      border-radius: 10px;
-      padding: 7px 10px;
+      border-radius: 9px;
+      padding: 5px 9px;
       font-weight: 700;
       cursor: pointer;
       background: #111827;
       color: white;
-      font-size: 13px;
-      height: 34px;
+      font-size: 12px;
+      height: 30px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       touch-action: manipulation;
     }
 
     button.check { background: var(--blue); }
     button.check:hover:not(:disabled) { background: var(--blue-dark); }
     button:disabled { opacity: .55; cursor: not-allowed; }
-    button:active:not(:disabled) { transform: translateY(1px); }
 
     .shuffle-icon {
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       color: currentColor;
       flex: 0 0 auto;
     }
 
     .countdown {
-      width: 42px;
-      height: 34px;
+      width: 38px;
+      height: 30px;
       display: grid;
       place-items: center;
       border-radius: 999px;
       background: rgba(255,255,255,.92);
       border: 2px solid rgba(37,99,235,.35);
-      font-size: 19px;
+      font-size: 17px;
       font-weight: 900;
       color: #1d4ed8;
-      box-shadow: 0 4px 14px rgba(16,24,40,.14);
+      box-shadow: 0 3px 10px rgba(16,24,40,.14);
       visibility: hidden;
     }
 
@@ -117,29 +114,30 @@
     .board {
       flex: 1 1 auto;
       min-height: 0;
+      height: calc(var(--app-height, 100vh) - 48px);
       display: grid;
       grid-template-rows: repeat(11, minmax(0, 1fr));
-      gap: 4px;
+      gap: 3px;
       touch-action: none;
     }
 
     .row {
       min-height: 0;
       display: grid;
-      grid-template-columns: 30px 1fr;
-      gap: 5px;
+      grid-template-columns: 26px 1fr;
+      gap: 4px;
       align-items: center;
       background: var(--card);
       border: 2px solid var(--line);
-      border-radius: 10px;
-      padding: 4px 6px;
-      box-shadow: 0 3px 10px rgba(16,24,40,.10);
+      border-radius: 9px;
+      padding: 2px 5px;
+      box-shadow: 0 2px 8px rgba(16,24,40,.10);
       backdrop-filter: blur(4px);
-      transition: border-color .15s ease, background .15s ease, transform .15s ease;
       -webkit-user-select: none;
       user-select: none;
       -webkit-touch-callout: none;
       touch-action: none;
+      overflow: hidden;
     }
 
     .row.draggable { cursor: grab; }
@@ -153,7 +151,7 @@
     .row.drop-target {
       border-color: #2563eb;
       background: rgba(219,234,254,.96);
-      box-shadow: 0 0 0 3px rgba(37,99,235,.2), 0 3px 10px rgba(16,24,40,.10);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.2);
     }
 
     .row.flash-correct {
@@ -176,27 +174,30 @@
     }
 
     .num {
-      width: 25px;
-      height: 25px;
+      width: 22px;
+      height: 22px;
       display: grid;
       place-items: center;
-      border-radius: 8px;
+      border-radius: 7px;
       background: #f2f4f7;
       font-weight: 800;
       color: #344054;
-      font-size: 11px;
+      font-size: 10px;
     }
 
     .flash-correct .num { background: #bbf7d0; color: #166534; }
     .flash-wrong .num { background: #fecaca; color: #991b1b; }
 
     .text {
-      font-size: clamp(8px, 1.7vw, 13px);
-      line-height: 1.05;
+      font-size: clamp(7px, 1.55vh, 12px);
+      line-height: 1.02;
       font-weight: 650;
       word-break: break-word;
       overflow: hidden;
       pointer-events: none;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
     }
 
     #fireworks {
@@ -209,42 +210,6 @@
     }
 
     #fireworks.show { visibility: visible; }
-
-    @media (max-width: 700px) {
-      body { padding: 4px; }
-
-      .wrap {
-        width: calc(100vw - 8px);
-        height: calc(100dvh - 8px);
-        gap: 3px;
-      }
-
-      .topbar {
-        height: 34px;
-        min-height: 34px;
-        flex-basis: 34px;
-      }
-
-      .board { gap: 3px; }
-
-      .row {
-        grid-template-columns: 28px 1fr;
-        gap: 4px;
-        padding: 3px 5px;
-        border-radius: 9px;
-      }
-
-      .num {
-        width: 23px;
-        height: 23px;
-        font-size: 10px;
-      }
-
-      .text {
-        font-size: clamp(7.5px, 1.8vw, 11px);
-        line-height: 1.03;
-      }
-    }
   </style>
 </head>
 
@@ -274,6 +239,16 @@
   </main>
 
   <script>
+    function setAppHeight() {
+      document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
+    }
+
+    setAppHeight();
+    window.addEventListener("resize", setAppHeight);
+    window.addEventListener("orientationchange", () => {
+      setTimeout(setAppHeight, 300);
+    });
+
     const lines = [
       "Benim adım Yaşar. Ben bir zaman yolcusuyum.",
       "Dün gece zaman makinemle 2150 yılına gittim.",
@@ -291,7 +266,7 @@
     const fixed = { id: 1, text: lines[0] };
     let order = [];
     let draggedId = null;
-    let touchDrag = null;
+    let activeDrag = null;
     let flashTimer = null;
     let countdownTimer = null;
     let checksLeft = 3;
@@ -324,11 +299,14 @@
     function startGame() {
       clearFlash();
       stopFireworks();
+
       gameFrozen = false;
       checksLeft = 3;
       draggedId = null;
-      touchDrag = null;
+      activeDrag = null;
+
       order = shuffle(lines.slice(1).map((text, index) => ({ id: index + 2, text })));
+
       updateCheckButton();
       render();
     }
@@ -351,20 +329,14 @@
         card.dataset.id = row.id;
         card.dataset.index = index;
 
-        card.addEventListener("dragover", handleDragOver);
-        card.addEventListener("drop", handleDrop);
-
         if (index > 0 && !gameFrozen) {
           card.classList.add("draggable");
-          card.draggable = true;
-
-          card.addEventListener("dragstart", handleDragStart);
-          card.addEventListener("dragend", handleDragEnd);
 
           card.addEventListener("pointerdown", handlePointerDown);
-          card.addEventListener("pointermove", handlePointerMove);
-          card.addEventListener("pointerup", handlePointerUp);
-          card.addEventListener("pointercancel", handlePointerCancel);
+          card.addEventListener("touchstart", handleTouchStart, { passive: false });
+          card.addEventListener("touchmove", handleTouchMove, { passive: false });
+          card.addEventListener("touchend", handleTouchEnd, { passive: false });
+          card.addEventListener("touchcancel", handleTouchCancel, { passive: false });
         } else {
           card.classList.add("locked");
         }
@@ -432,10 +404,9 @@
     function freezeGame() {
       gameFrozen = true;
       draggedId = null;
-      touchDrag = null;
+      cleanupDrag();
 
       document.querySelectorAll(".row").forEach(card => {
-        card.draggable = false;
         card.classList.remove("draggable", "dragging", "drop-target");
         card.classList.add("locked");
       });
@@ -492,53 +463,14 @@
       return true;
     }
 
-    function handleDragStart(event) {
-      if (gameFrozen) return;
+    function startDrag(card, clientX, clientY, pointerId) {
+      if (gameFrozen || card.classList.contains("locked")) return;
 
       clearFlash();
 
-      draggedId = Number(event.currentTarget.dataset.id);
-      event.currentTarget.classList.add("dragging");
-
-      event.dataTransfer.effectAllowed = "move";
-      event.dataTransfer.setData("text/plain", String(draggedId));
-    }
-
-    function handleDragEnd(event) {
-      event.currentTarget.classList.remove("dragging");
-      draggedId = null;
-    }
-
-    function handleDragOver(event) {
-      if (gameFrozen) return;
-
-      event.preventDefault();
-      event.dataTransfer.dropEffect = "move";
-    }
-
-    function handleDrop(event) {
-      if (gameFrozen) return;
-
-      event.preventDefault();
-
-      const targetDisplayIndex = Number(event.currentTarget.dataset.index);
-
-      if (moveItemToDisplayIndex(draggedId, targetDisplayIndex)) {
-        render();
-      }
-    }
-
-    function handlePointerDown(event) {
-      if (gameFrozen) return;
-      if (event.pointerType === "mouse") return;
-      if (event.currentTarget.classList.contains("locked")) return;
-
-      clearFlash();
-
-      const card = event.currentTarget;
       const rect = card.getBoundingClientRect();
-
       const clone = card.cloneNode(true);
+
       clone.classList.add("drag-clone");
       clone.style.left = rect.left + "px";
       clone.style.top = rect.top + "px";
@@ -546,65 +478,44 @@
       clone.style.height = rect.height + "px";
 
       document.body.appendChild(clone);
-
-      touchDrag = {
-        id: Number(card.dataset.id),
-        pointerId: event.pointerId,
-        source: card,
-        clone: clone,
-        offsetX: event.clientX - rect.left,
-        offsetY: event.clientY - rect.top
-      };
-
       card.classList.add("dragging");
 
-      try {
-        card.setPointerCapture(event.pointerId);
-      } catch (e) {}
-
-      event.preventDefault();
+      activeDrag = {
+        id: Number(card.dataset.id),
+        source: card,
+        clone,
+        pointerId,
+        offsetX: clientX - rect.left,
+        offsetY: clientY - rect.top
+      };
     }
 
-    function handlePointerMove(event) {
-      if (!touchDrag) return;
-      if (touchDrag.pointerId !== event.pointerId) return;
+    function moveDrag(clientX, clientY) {
+      if (!activeDrag) return;
 
-      touchDrag.clone.style.left = (event.clientX - touchDrag.offsetX) + "px";
-      touchDrag.clone.style.top = (event.clientY - touchDrag.offsetY) + "px";
+      activeDrag.clone.style.left = (clientX - activeDrag.offsetX) + "px";
+      activeDrag.clone.style.top = (clientY - activeDrag.offsetY) + "px";
 
       document.querySelectorAll(".row").forEach(row => {
         row.classList.remove("drop-target");
       });
 
-      const el = document.elementFromPoint(event.clientX, event.clientY);
+      const el = document.elementFromPoint(clientX, clientY);
       const target = el ? el.closest(".row") : null;
 
       if (target && Number(target.dataset.index) !== 0) {
         target.classList.add("drop-target");
       }
-
-      event.preventDefault();
     }
 
-    function handlePointerUp(event) {
-      if (!touchDrag) return;
-      if (touchDrag.pointerId !== event.pointerId) return;
+    function endDrag(clientX, clientY) {
+      if (!activeDrag) return;
 
-      const el = document.elementFromPoint(event.clientX, event.clientY);
+      const el = document.elementFromPoint(clientX, clientY);
       const target = el ? el.closest(".row") : null;
+      const id = activeDrag.id;
 
-      const clone = touchDrag.clone;
-      const source = touchDrag.source;
-      const id = touchDrag.id;
-
-      if (clone) clone.remove();
-      if (source) source.classList.remove("dragging");
-
-      document.querySelectorAll(".row").forEach(row => {
-        row.classList.remove("drop-target");
-      });
-
-      touchDrag = null;
+      cleanupDrag();
 
       if (target) {
         const targetDisplayIndex = Number(target.dataset.index);
@@ -613,21 +524,82 @@
           render();
         }
       }
-
-      event.preventDefault();
     }
 
-    function handlePointerCancel(event) {
-      if (!touchDrag) return;
-
-      if (touchDrag.clone) touchDrag.clone.remove();
-      if (touchDrag.source) touchDrag.source.classList.remove("dragging");
+    function cleanupDrag() {
+      if (activeDrag) {
+        if (activeDrag.clone) activeDrag.clone.remove();
+        if (activeDrag.source) activeDrag.source.classList.remove("dragging");
+      }
 
       document.querySelectorAll(".row").forEach(row => {
         row.classList.remove("drop-target");
       });
 
-      touchDrag = null;
+      activeDrag = null;
+    }
+
+    function handlePointerDown(event) {
+      if (event.pointerType === "mouse") return;
+
+      startDrag(event.currentTarget, event.clientX, event.clientY, event.pointerId);
+
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch (e) {}
+
+      event.preventDefault();
+    }
+
+    window.addEventListener("pointermove", event => {
+      if (!activeDrag) return;
+      if (activeDrag.pointerId !== event.pointerId) return;
+
+      moveDrag(event.clientX, event.clientY);
+      event.preventDefault();
+    }, { passive: false });
+
+    window.addEventListener("pointerup", event => {
+      if (!activeDrag) return;
+      if (activeDrag.pointerId !== event.pointerId) return;
+
+      endDrag(event.clientX, event.clientY);
+      event.preventDefault();
+    }, { passive: false });
+
+    window.addEventListener("pointercancel", () => {
+      cleanupDrag();
+    });
+
+    function handleTouchStart(event) {
+      if (window.PointerEvent) return;
+
+      const touch = event.touches[0];
+      startDrag(event.currentTarget, touch.clientX, touch.clientY, "touch");
+      event.preventDefault();
+    }
+
+    function handleTouchMove(event) {
+      if (window.PointerEvent) return;
+      if (!activeDrag) return;
+
+      const touch = event.touches[0];
+      moveDrag(touch.clientX, touch.clientY);
+      event.preventDefault();
+    }
+
+    function handleTouchEnd(event) {
+      if (window.PointerEvent) return;
+      if (!activeDrag) return;
+
+      const touch = event.changedTouches[0];
+      endDrag(touch.clientX, touch.clientY);
+      event.preventDefault();
+    }
+
+    function handleTouchCancel() {
+      if (window.PointerEvent) return;
+      cleanupDrag();
     }
 
     let particles = [];
