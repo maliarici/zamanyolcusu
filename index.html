@@ -10,7 +10,7 @@
 
   <style>
     :root {
-      --card: rgba(255,255,255,.90);
+      --card: rgba(255,255,255,.92);
       --text: #17202a;
       --line: rgba(208,213,221,.9);
       --blue: #2563eb;
@@ -44,7 +44,7 @@
     }
 
     .wrap {
-      width: min(720px, calc(100vw - 8px));
+      width: min(760px, calc(100vw - 8px));
       height: calc(var(--app-height, 100vh) - 8px);
       margin: 0 auto;
       display: flex;
@@ -53,31 +53,31 @@
     }
 
     .topbar {
-      height: 34px;
-      min-height: 34px;
+      height: 36px;
+      min-height: 36px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 5px;
-      flex: 0 0 34px;
+      gap: 6px;
+      flex: 0 0 36px;
     }
 
     .controls {
       display: flex;
-      gap: 5px;
+      gap: 6px;
       align-items: center;
     }
 
     button {
       border: 0;
       border-radius: 9px;
-      padding: 5px 9px;
-      font-weight: 700;
+      padding: 6px 10px;
+      font-weight: 800;
       cursor: pointer;
       background: #111827;
       color: white;
-      font-size: 12px;
-      height: 30px;
+      font-size: 13px;
+      height: 32px;
       display: inline-flex;
       align-items: center;
       gap: 5px;
@@ -89,21 +89,21 @@
     button:disabled { opacity: .55; cursor: not-allowed; }
 
     .shuffle-icon {
-      width: 14px;
-      height: 14px;
+      width: 15px;
+      height: 15px;
       color: currentColor;
       flex: 0 0 auto;
     }
 
     .countdown {
-      width: 38px;
-      height: 30px;
+      width: 40px;
+      height: 32px;
       display: grid;
       place-items: center;
       border-radius: 999px;
       background: rgba(255,255,255,.92);
       border: 2px solid rgba(37,99,235,.35);
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 900;
       color: #1d4ed8;
       box-shadow: 0 3px 10px rgba(16,24,40,.14);
@@ -124,13 +124,13 @@
     .row {
       min-height: 0;
       display: grid;
-      grid-template-columns: 30px 1fr;
-      gap: 6px;
+      grid-template-columns: 34px 1fr;
+      gap: 8px;
       align-items: center;
       background: var(--card);
       border: 2px solid var(--line);
-      border-radius: 10px;
-      padding: 4px 7px;
+      border-radius: 11px;
+      padding: 5px 8px;
       box-shadow: 0 2px 8px rgba(16,24,40,.10);
       backdrop-filter: blur(4px);
       -webkit-user-select: none;
@@ -174,15 +174,15 @@
     }
 
     .num {
-      width: 25px;
-      height: 25px;
+      width: 28px;
+      height: 28px;
       display: grid;
       place-items: center;
-      border-radius: 7px;
+      border-radius: 8px;
       background: #f2f4f7;
-      font-weight: 800;
+      font-weight: 900;
       color: #344054;
-      font-size: 11px;
+      font-size: 12px;
       flex-shrink: 0;
     }
 
@@ -190,9 +190,9 @@
     .flash-wrong .num { background: #fecaca; color: #991b1b; }
 
     .text {
-      font-size: clamp(14px, 2.4vh, 18px);
-      line-height: 1.22;
-      font-weight: 650;
+      font-size: clamp(15px, 2.15vh, 21px);
+      line-height: 1.2;
+      font-weight: 800;
       word-break: normal;
       overflow: visible;
       pointer-events: none;
@@ -216,21 +216,22 @@
         height: calc(var(--app-height, 100vh) - 8px);
       }
 
-      .text {
-        font-size: clamp(13px, 2.2vh, 16px);
-        line-height: 1.2;
-      }
-
       .row {
-        grid-template-columns: 28px 1fr;
-        gap: 5px;
-        padding: 3px 6px;
+        grid-template-columns: 31px 1fr;
+        gap: 7px;
+        padding: 4px 7px;
       }
 
       .num {
-        width: 23px;
-        height: 23px;
-        font-size: 10px;
+        width: 26px;
+        height: 26px;
+        font-size: 11px;
+      }
+
+      .text {
+        font-size: clamp(13px, 1.95vh, 18px);
+        line-height: 1.18;
+        font-weight: 800;
       }
     }
   </style>
@@ -262,6 +263,54 @@
   </main>
 
   <script>
+    function forceFavicon() {
+      const canvas = document.createElement("canvas");
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext("2d");
+
+      ctx.fillStyle = "#e30a17";
+      ctx.fillRect(0, 0, 64, 64);
+
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(27, 32, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#e30a17";
+      ctx.beginPath();
+      ctx.arc(33, 32, 13, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      const cx = 46;
+      const cy = 32;
+      const outer = 10;
+      const inner = 4;
+      for (let i = 0; i < 10; i++) {
+        const angle = -Math.PI / 2 + i * Math.PI / 5;
+        const r = i % 2 === 0 ? outer : inner;
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+
+      const oldIcons = document.querySelectorAll("link[rel~='icon'], link[rel='shortcut icon']");
+      oldIcons.forEach(icon => icon.remove());
+
+      const icon = document.createElement("link");
+      icon.rel = "icon";
+      icon.type = "image/png";
+      icon.href = canvas.toDataURL("image/png");
+      document.head.appendChild(icon);
+    }
+
+    forceFavicon();
+
     function setAppHeight() {
       document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
     }
