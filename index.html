@@ -9,7 +9,7 @@
 
   <style>
     :root {
-      --card: rgba(255,255,255,.93);
+      --card: rgba(255,255,255,.88);
       --text: #17202a;
       --line: rgba(208,213,221,.9);
       --blue: #2563eb;
@@ -38,73 +38,76 @@
         url("leo-futuristic-bg.png") center / cover no-repeat fixed,
         #e5e7eb;
       color: var(--text);
-      padding: 4px;
+      padding: 10px;
     }
 
     .wrap {
-      width: min(780px, calc(100vw - 8px));
-      height: calc(var(--app-height, 100vh) - 8px);
+      width: min(760px, calc(100vw - 20px));
+      height: calc(var(--app-height, 100vh) - 20px);
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
     }
 
     .topbar {
-      height: 36px;
-      min-height: 36px;
+      min-height: 46px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 6px;
-      flex: 0 0 36px;
+      gap: 10px;
+      flex: 0 0 46px;
     }
 
     .controls {
       display: flex;
-      gap: 6px;
+      flex-wrap: wrap;
+      gap: 8px;
       align-items: center;
     }
 
     button {
       border: 0;
-      border-radius: 9px;
-      padding: 6px 10px;
+      border-radius: 12px;
+      padding: 10px 14px;
       font-weight: 800;
       cursor: pointer;
       background: #111827;
       color: white;
-      font-size: 13px;
-      height: 32px;
+      font-size: 14px;
+      height: 40px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 7px;
       touch-action: manipulation;
     }
 
     button.check { background: var(--blue); }
     button.check:hover:not(:disabled) { background: var(--blue-dark); }
     button:disabled { opacity: .55; cursor: not-allowed; }
+    button:active:not(:disabled) { transform: translateY(1px); }
 
     .shuffle-icon {
-      width: 15px;
-      height: 15px;
+      width: 18px;
+      height: 18px;
       color: currentColor;
       flex: 0 0 auto;
     }
 
     .countdown {
-      width: 40px;
-      height: 32px;
+      width: 54px;
+      height: 46px;
       display: grid;
       place-items: center;
       border-radius: 999px;
       background: rgba(255,255,255,.92);
       border: 2px solid rgba(37,99,235,.35);
-      font-size: 18px;
+      font-size: 24px;
       font-weight: 900;
       color: #1d4ed8;
-      box-shadow: 0 3px 10px rgba(16,24,40,.14);
+      box-shadow: 0 4px 14px rgba(16,24,40,.14);
       visibility: hidden;
     }
 
@@ -115,22 +118,23 @@
       min-height: 0;
       display: grid;
       grid-template-rows: repeat(11, minmax(0, 1fr));
-      gap: 4px;
+      gap: 6px;
       touch-action: none;
     }
 
     .row {
       min-height: 0;
       display: grid;
-      grid-template-columns: 34px 1fr;
+      grid-template-columns: 42px 1fr;
       gap: 8px;
       align-items: center;
       background: var(--card);
       border: 2px solid var(--line);
-      border-radius: 11px;
-      padding: 5px 8px;
-      box-shadow: 0 2px 8px rgba(16,24,40,.10);
+      border-radius: 14px;
+      padding: 7px 9px;
+      box-shadow: 0 4px 14px rgba(16,24,40,.10);
       backdrop-filter: blur(4px);
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
       -webkit-user-select: none;
       user-select: none;
       -webkit-touch-callout: none;
@@ -142,7 +146,7 @@
     .row.locked { cursor: default; }
 
     .row.dragging {
-      opacity: .25;
+      opacity: .28;
       transform: scale(.99);
       cursor: grabbing;
     }
@@ -150,7 +154,7 @@
     .row.drop-target {
       border-color: #2563eb;
       background: rgba(219,234,254,.96);
-      box-shadow: 0 0 0 3px rgba(37,99,235,.2);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.2), 0 4px 14px rgba(16,24,40,.10);
     }
 
     .row.flash-correct {
@@ -174,15 +178,15 @@
     }
 
     .num {
-      width: 28px;
-      height: 28px;
+      width: 34px;
+      height: 34px;
       display: grid;
       place-items: center;
-      border-radius: 8px;
+      border-radius: 11px;
       background: #f2f4f7;
       font-weight: 900;
       color: #344054;
-      font-size: 12px;
+      font-size: 14px;
       flex-shrink: 0;
     }
 
@@ -190,7 +194,7 @@
     .flash-wrong .num { background: #fecaca; color: #991b1b; }
 
     .text {
-      font-size: clamp(15px, 2.05vh, 21px);
+      font-size: clamp(16px, 2.25vh, 22px);
       line-height: 1.18;
       font-weight: 850;
       word-break: normal;
@@ -211,21 +215,58 @@
     #fireworks.show { visibility: visible; }
 
     @media (max-width: 700px) {
+      body { padding: 7px; }
+
+      .wrap {
+        width: calc(100vw - 14px);
+        height: calc(var(--app-height, 100vh) - 14px);
+        gap: 6px;
+      }
+
+      .topbar {
+        min-height: 40px;
+        flex-basis: 40px;
+        gap: 6px;
+      }
+
+      .controls { gap: 6px; }
+
+      button {
+        padding: 8px 11px;
+        font-size: 13px;
+        height: 36px;
+      }
+
+      .shuffle-icon {
+        width: 16px;
+        height: 16px;
+      }
+
+      .countdown {
+        width: 46px;
+        height: 40px;
+        font-size: 21px;
+      }
+
+      .board { gap: 5px; }
+
       .row {
-        grid-template-columns: 31px 1fr;
-        gap: 7px;
-        padding: 4px 7px;
+        grid-template-columns: 34px 1fr;
+        gap: 6px;
+        padding: 5px 6px;
+        border-radius: 12px;
       }
 
       .num {
-        width: 26px;
-        height: 26px;
-        font-size: 11px;
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+        border-radius: 9px;
       }
 
       .text {
-        font-size: clamp(13px, 1.85vh, 18px);
-        line-height: 1.16;
+        font-size: clamp(14px, 2.05vh, 19px);
+        line-height: 1.14;
         font-weight: 850;
       }
     }
@@ -258,55 +299,6 @@
   </main>
 
   <script>
-    function forceFavicon() {
-      const canvas = document.createElement("canvas");
-      canvas.width = 64;
-      canvas.height = 64;
-      const ctx = canvas.getContext("2d");
-
-      ctx.fillStyle = "#e30a17";
-      ctx.fillRect(0, 0, 64, 64);
-
-      ctx.fillStyle = "white";
-      ctx.beginPath();
-      ctx.arc(27, 32, 16, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#e30a17";
-      ctx.beginPath();
-      ctx.arc(33, 32, 13, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "white";
-      ctx.beginPath();
-      const cx = 46;
-      const cy = 32;
-      const outer = 10;
-      const inner = 4;
-
-      for (let i = 0; i < 10; i++) {
-        const angle = -Math.PI / 2 + i * Math.PI / 5;
-        const r = i % 2 === 0 ? outer : inner;
-        const x = cx + Math.cos(angle) * r;
-        const y = cy + Math.sin(angle) * r;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-
-      ctx.closePath();
-      ctx.fill();
-
-      document.querySelectorAll("link[rel~='icon'], link[rel='shortcut icon']").forEach(icon => icon.remove());
-
-      const icon = document.createElement("link");
-      icon.rel = "icon";
-      icon.type = "image/png";
-      icon.href = canvas.toDataURL("image/png");
-      document.head.appendChild(icon);
-    }
-
-    forceFavicon();
-
     function setAppHeight() {
       document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
     }
@@ -348,10 +340,12 @@
 
     function shuffle(array) {
       const copy = [...array];
+
       for (let i = copy.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [copy[i], copy[j]] = [copy[j], copy[i]];
       }
+
       return copy;
     }
 
@@ -364,10 +358,12 @@
     function startGame() {
       clearFlash();
       stopFireworks();
+      cleanupDrag();
+
       gameFrozen = false;
       checksLeft = 3;
-      activeDrag = null;
       order = shuffle(lines.slice(1).map((text, index) => ({ id: index + 2, text })));
+
       updateCheckButton();
       render();
     }
@@ -637,9 +633,7 @@
       endDrag(touch.clientX, touch.clientY);
     }, { passive: false });
 
-    window.addEventListener("touchcancel", () => {
-      cleanupDrag();
-    });
+    window.addEventListener("touchcancel", cleanupDrag);
 
     let particles = [];
     let fireworksAnimation = null;
