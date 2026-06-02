@@ -6,7 +6,6 @@
   <title>Sıralama Etkinliği</title>
 
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='16' fill='%23e30a17'/%3E%3Ccircle cx='42' cy='50' r='24' fill='white'/%3E%3Ccircle cx='50' cy='50' r='19' fill='%23e30a17'/%3E%3Cpolygon points='70,35 74,46 86,46 77,53 80,65 70,58 60,65 63,53 54,46 66,46' fill='white'/%3E%3C/svg%3E">
-  <link rel="shortcut icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='16' fill='%23e30a17'/%3E%3Ccircle cx='42' cy='50' r='24' fill='white'/%3E%3Ccircle cx='50' cy='50' r='19' fill='%23e30a17'/%3E%3Cpolygon points='70,35 74,46 86,46 77,53 80,65 70,58 60,65 63,53 54,46 66,46' fill='white'/%3E%3C/svg%3E">
 
   <style>
     :root {
@@ -138,10 +137,12 @@
       -webkit-touch-callout: none;
       touch-action: none;
       overflow: hidden;
+      cursor: grab;
     }
 
-    .row.draggable { cursor: grab; }
-    .row.locked { cursor: default; }
+    .row.locked {
+      cursor: default;
+    }
 
     .row.dragging {
       opacity: .25;
@@ -171,6 +172,7 @@
       opacity: .97;
       transform: scale(1.03);
       box-shadow: 0 18px 36px rgba(0,0,0,.28);
+      cursor: grabbing;
     }
 
     .num {
@@ -211,11 +213,6 @@
     #fireworks.show { visibility: visible; }
 
     @media (max-width: 700px) {
-      .wrap {
-        width: calc(100vw - 8px);
-        height: calc(var(--app-height, 100vh) - 8px);
-      }
-
       .row {
         grid-template-columns: 31px 1fr;
         gap: 7px;
@@ -352,12 +349,10 @@
 
     function shuffle(array) {
       const copy = [...array];
-
       for (let i = copy.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [copy[i], copy[j]] = [copy[j], copy[i]];
       }
-
       return copy;
     }
 
@@ -370,13 +365,10 @@
     function startGame() {
       clearFlash();
       stopFireworks();
-
       gameFrozen = false;
       checksLeft = 3;
       activeDrag = null;
-
       order = shuffle(lines.slice(1).map((text, index) => ({ id: index + 2, text })));
-
       updateCheckButton();
       render();
     }
@@ -394,7 +386,6 @@
 
       currentRows().forEach((row, index) => {
         const card = document.createElement("article");
-
         card.className = "row";
         card.dataset.id = row.id;
         card.dataset.index = index;
@@ -402,10 +393,6 @@
         if (index > 0 && !gameFrozen) {
           card.classList.add("draggable");
           card.addEventListener("pointerdown", handlePointerDown);
-          card.addEventListener("touchstart", handleTouchStart, { passive: false });
-          card.addEventListener("touchmove", handleTouchMove, { passive: false });
-          card.addEventListener("touchend", handleTouchEnd, { passive: false });
-          card.addEventListener("touchcancel", handleTouchCancel, { passive: false });
         } else {
           card.classList.add("locked");
         }
@@ -450,7 +437,6 @@
 
       countdownTimer = setInterval(() => {
         remaining -= 1;
-
         if (remaining > 0) {
           countdown.textContent = remaining;
         } else {
@@ -531,9 +517,20 @@
       return true;
     }
 
-    function startDrag(card, clientX, clientY, pointerId) {
-      if (gameFrozen || card.classList.contains("locked")) return;
+    function handlePointerDown(event) {
+      if (gameFrozen) return;
+      if (event.button !== undefined && event.button !== 0) return;
+      if (event.currentTarget.classList.contains("locked")) return;
 
+      event.preventDefault();
+      startDrag(event.currentTarget, event.clientX, event.clientY, event.pointerId);
+
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch (e) {}
+    }
+
+    function startDrag(card, clientX, clientY, pointerId) {
       clearFlash();
 
       const rect = card.getBoundingClientRect();
@@ -587,7 +584,6 @@
 
       if (target) {
         const targetDisplayIndex = Number(target.dataset.index);
-
         if (moveItemToDisplayIndex(id, targetDisplayIndex)) {
           render();
         }
@@ -607,68 +603,25 @@
       activeDrag = null;
     }
 
-    function handlePointerDown(event) {
-      if (event.pointerType === "mouse") return;
-
-      startDrag(event.currentTarget, event.clientX, event.clientY, event.pointerId);
-
-      try {
-        event.currentTarget.setPointerCapture(event.pointerId);
-      } catch (e) {}
-
-      event.preventDefault();
-    }
-
     window.addEventListener("pointermove", event => {
       if (!activeDrag) return;
       if (activeDrag.pointerId !== event.pointerId) return;
 
-      moveDrag(event.clientX, event.clientY);
       event.preventDefault();
+      moveDrag(event.clientX, event.clientY);
     }, { passive: false });
 
     window.addEventListener("pointerup", event => {
       if (!activeDrag) return;
       if (activeDrag.pointerId !== event.pointerId) return;
 
-      endDrag(event.clientX, event.clientY);
       event.preventDefault();
+      endDrag(event.clientX, event.clientY);
     }, { passive: false });
 
     window.addEventListener("pointercancel", () => {
       cleanupDrag();
     });
-
-    function handleTouchStart(event) {
-      if (window.PointerEvent) return;
-
-      const touch = event.touches[0];
-      startDrag(event.currentTarget, touch.clientX, touch.clientY, "touch");
-      event.preventDefault();
-    }
-
-    function handleTouchMove(event) {
-      if (window.PointerEvent) return;
-      if (!activeDrag) return;
-
-      const touch = event.touches[0];
-      moveDrag(touch.clientX, touch.clientY);
-      event.preventDefault();
-    }
-
-    function handleTouchEnd(event) {
-      if (window.PointerEvent) return;
-      if (!activeDrag) return;
-
-      const touch = event.changedTouches[0];
-      endDrag(touch.clientX, touch.clientY);
-      event.preventDefault();
-    }
-
-    function handleTouchCancel() {
-      if (window.PointerEvent) return;
-      cleanupDrag();
-    }
 
     let particles = [];
     let fireworksAnimation = null;
@@ -700,10 +653,8 @@
 
     function startFireworks() {
       resizeFireworks();
-
       fireworksCanvas.classList.add("show");
       fireworksCanvas.style.visibility = "visible";
-
       particles = [];
 
       makeBurst(window.innerWidth * .30, window.innerHeight * .28);
@@ -714,7 +665,6 @@
 
       function animate() {
         frames += 1;
-
         fireworksCtx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
 
         if (frames === 35) {
@@ -765,7 +715,7 @@
 
     window.addEventListener("resize", resizeFireworks);
 
-    checkBtn.addEventListener("click", checkOrder);
+    checkBtn.addEventListener("click", start => checkOrder());
     shuffleBtn.addEventListener("click", startGame);
 
     startGame();
