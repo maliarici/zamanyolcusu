@@ -2,16 +2,18 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Sıralama Etkinliği</title>
-  <link rel="icon" type="image/png" href="./turkey.png?v=3">
-  <link rel="apple-touch-icon" href="./turkey.png?v=3">
+
+  <link rel="icon" type="image/png" href="/zamanyolcusu/turkey.png?v=99">
+  <link rel="shortcut icon" type="image/png" href="/zamanyolcusu/turkey.png?v=99">
+  <link rel="apple-touch-icon" href="/zamanyolcusu/turkey.png?v=99">
 
   <style>
     :root {
-      --card: rgba(255, 255, 255, 0.88);
+      --card: rgba(255,255,255,.90);
       --text: #17202a;
-      --line: rgba(208, 213, 221, 0.9);
+      --line: rgba(208,213,221,.9);
       --blue: #2563eb;
       --blue-dark: #1d4ed8;
       --ok: #16a34a;
@@ -20,96 +22,93 @@
 
     * { box-sizing: border-box; }
 
-    html,
-    body {
-      height: 100%;
+    html, body {
+      width: 100%;
+      height: 100dvh;
+      margin: 0;
       overflow: hidden;
-      touch-action: none;
       overscroll-behavior: none;
       -webkit-user-select: none;
       user-select: none;
     }
 
     body {
-      margin: 0;
-      min-height: 100vh;
       font-family: Arial, Helvetica, sans-serif;
       background:
-        linear-gradient(rgba(255,255,255,0.18), rgba(255,255,255,0.18)),
+        linear-gradient(rgba(255,255,255,.18), rgba(255,255,255,.18)),
         url("leo-futuristic-bg.png") center / cover no-repeat fixed;
       color: var(--text);
-      padding: 10px;
+      padding: 5px;
     }
 
     .wrap {
-      width: min(680px, calc(100vw - 20px));
+      width: min(680px, calc(100vw - 10px));
       max-width: 680px;
-      height: calc(100vh - 20px);
+      height: calc(100dvh - 10px);
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 4px;
       position: relative;
       z-index: 1;
     }
 
     .topbar {
-      min-height: 46px;
+      height: 36px;
+      min-height: 36px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
-      flex: 0 0 46px;
+      gap: 6px;
+      flex: 0 0 36px;
     }
 
     .controls {
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
     }
 
     button {
       border: 0;
-      border-radius: 12px;
-      padding: 10px 14px;
+      border-radius: 10px;
+      padding: 7px 10px;
       font-weight: 700;
       cursor: pointer;
       background: #111827;
       color: white;
-      font-size: 14px;
-      height: 40px;
+      font-size: 13px;
+      height: 34px;
       display: inline-flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
       touch-action: manipulation;
     }
 
     button.check { background: var(--blue); }
     button.check:hover:not(:disabled) { background: var(--blue-dark); }
-    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
     button:active:not(:disabled) { transform: translateY(1px); }
 
     .shuffle-icon {
-      width: 18px;
-      height: 18px;
-      display: inline-block;
+      width: 16px;
+      height: 16px;
       color: currentColor;
       flex: 0 0 auto;
     }
 
     .countdown {
-      width: 54px;
-      height: 46px;
+      width: 42px;
+      height: 34px;
       display: grid;
       place-items: center;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.92);
-      border: 2px solid rgba(37, 99, 235, 0.35);
-      font-size: 24px;
+      background: rgba(255,255,255,.92);
+      border: 2px solid rgba(37,99,235,.35);
+      font-size: 19px;
       font-weight: 900;
       color: #1d4ed8;
-      box-shadow: 0 4px 14px rgba(16, 24, 40, 0.14);
+      box-shadow: 0 4px 14px rgba(16,24,40,.14);
       visibility: hidden;
     }
 
@@ -120,81 +119,80 @@
       min-height: 0;
       display: grid;
       grid-template-rows: repeat(11, minmax(0, 1fr));
-      gap: 6px;
+      gap: 4px;
       touch-action: none;
     }
 
     .row {
       min-height: 0;
       display: grid;
-      grid-template-columns: 42px 1fr;
-      gap: 8px;
+      grid-template-columns: 30px 1fr;
+      gap: 5px;
       align-items: center;
       background: var(--card);
       border: 2px solid var(--line);
-      border-radius: 14px;
-      padding: 7px 9px;
-      box-shadow: 0 4px 14px rgba(16, 24, 40, 0.10);
+      border-radius: 10px;
+      padding: 4px 6px;
+      box-shadow: 0 3px 10px rgba(16,24,40,.10);
       backdrop-filter: blur(4px);
-      transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
-      user-select: none;
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
       -webkit-user-select: none;
+      user-select: none;
       -webkit-touch-callout: none;
       touch-action: none;
     }
 
     .row.draggable { cursor: grab; }
-    .row.draggable:active { cursor: grabbing; }
     .row.locked { cursor: default; }
 
-    .row.flash-correct {
-      border-color: var(--ok);
-      background: rgba(220, 252, 231, 0.94);
-    }
-
-    .row.flash-wrong {
-      border-color: var(--wrong);
-      background: rgba(254, 226, 226, 0.94);
-    }
-
     .row.dragging {
-      opacity: 0.25;
-      transform: scale(0.99);
+      opacity: .25;
+      transform: scale(.99);
     }
 
     .row.drop-target {
       border-color: #2563eb;
-      background: rgba(219, 234, 254, 0.96);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2), 0 4px 14px rgba(16, 24, 40, 0.10);
+      background: rgba(219,234,254,.96);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.2), 0 3px 10px rgba(16,24,40,.10);
+    }
+
+    .row.flash-correct {
+      border-color: var(--ok);
+      background: rgba(220,252,231,.94);
+    }
+
+    .row.flash-wrong {
+      border-color: var(--wrong);
+      background: rgba(254,226,226,.94);
     }
 
     .drag-clone {
       position: fixed;
       z-index: 99999;
       pointer-events: none;
-      opacity: 0.97;
+      opacity: .97;
       transform: scale(1.03);
-      box-shadow: 0 18px 36px rgba(0,0,0,0.28);
+      box-shadow: 0 18px 36px rgba(0,0,0,.28);
     }
 
     .num {
-      width: 34px;
-      height: 34px;
+      width: 25px;
+      height: 25px;
       display: grid;
       place-items: center;
-      border-radius: 11px;
+      border-radius: 8px;
       background: #f2f4f7;
       font-weight: 800;
       color: #344054;
-      font-size: 14px;
+      font-size: 11px;
     }
 
     .flash-correct .num { background: #bbf7d0; color: #166534; }
     .flash-wrong .num { background: #fecaca; color: #991b1b; }
 
     .text {
-      font-size: clamp(12px, 1.35vw, 17px);
-      line-height: 1.22;
+      font-size: clamp(8px, 1.7vw, 13px);
+      line-height: 1.05;
       font-weight: 650;
       word-break: break-word;
       overflow: hidden;
@@ -213,59 +211,38 @@
     #fireworks.show { visibility: visible; }
 
     @media (max-width: 700px) {
-      body { padding: 7px; }
+      body { padding: 4px; }
 
       .wrap {
-        width: calc(100vw - 14px);
-        height: calc(100vh - 14px);
-        gap: 6px;
-        margin: 0 auto;
+        width: calc(100vw - 8px);
+        height: calc(100dvh - 8px);
+        gap: 3px;
       }
 
       .topbar {
-        min-height: 40px;
-        flex-basis: 40px;
-        gap: 6px;
+        height: 34px;
+        min-height: 34px;
+        flex-basis: 34px;
       }
 
-      .controls { gap: 6px; }
-
-      button {
-        padding: 8px 11px;
-        font-size: 13px;
-        height: 36px;
-      }
-
-      .shuffle-icon {
-        width: 16px;
-        height: 16px;
-      }
-
-      .countdown {
-        width: 46px;
-        height: 40px;
-        font-size: 21px;
-      }
-
-      .board { gap: 5px; }
+      .board { gap: 3px; }
 
       .row {
-        grid-template-columns: 34px 1fr;
-        gap: 6px;
-        padding: 5px 6px;
-        border-radius: 12px;
-      }
-
-      .num {
-        width: 28px;
-        height: 28px;
-        font-size: 12px;
+        grid-template-columns: 28px 1fr;
+        gap: 4px;
+        padding: 3px 5px;
         border-radius: 9px;
       }
 
+      .num {
+        width: 23px;
+        height: 23px;
+        font-size: 10px;
+      }
+
       .text {
-        font-size: clamp(10px, 2.4vw, 13px);
-        line-height: 1.15;
+        font-size: clamp(7.5px, 1.8vw, 11px);
+        line-height: 1.03;
       }
     }
   </style>
@@ -379,8 +356,8 @@
 
         if (index > 0 && !gameFrozen) {
           card.classList.add("draggable");
-
           card.draggable = true;
+
           card.addEventListener("dragstart", handleDragStart);
           card.addEventListener("dragend", handleDragEnd);
 
@@ -409,7 +386,6 @@
 
       flashTimer = null;
       countdownTimer = null;
-
       countdown.classList.remove("show");
 
       document.querySelectorAll(".row").forEach(card => {
@@ -423,13 +399,11 @@
 
       flashTimer = null;
       countdownTimer = null;
-
       countdown.classList.remove("show");
     }
 
     function startCountdown() {
       let remaining = 5;
-
       countdown.textContent = remaining;
       countdown.classList.add("show");
 
@@ -692,9 +666,9 @@
 
       particles = [];
 
-      makeBurst(window.innerWidth * 0.30, window.innerHeight * 0.28);
-      makeBurst(window.innerWidth * 0.55, window.innerHeight * 0.20);
-      makeBurst(window.innerWidth * 0.78, window.innerHeight * 0.32);
+      makeBurst(window.innerWidth * .30, window.innerHeight * .28);
+      makeBurst(window.innerWidth * .55, window.innerHeight * .20);
+      makeBurst(window.innerWidth * .78, window.innerHeight * .32);
 
       let frames = 0;
 
@@ -704,16 +678,16 @@
         fireworksCtx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
 
         if (frames === 35) {
-          makeBurst(window.innerWidth * 0.45, window.innerHeight * 0.38);
+          makeBurst(window.innerWidth * .45, window.innerHeight * .38);
         }
 
         particles.forEach(p => {
           p.age += 1;
           p.x += p.vx;
           p.y += p.vy;
-          p.vy += 0.045;
-          p.vx *= 0.985;
-          p.vy *= 0.985;
+          p.vy += .045;
+          p.vx *= .985;
+          p.vy *= .985;
 
           const alpha = Math.max(0, 1 - p.age / p.life);
 
