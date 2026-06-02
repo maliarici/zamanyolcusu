@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sıralama Etkinliği</title>
-  <link rel="icon" type="image/png" href="turkey.png?v=2">
-  <link rel="apple-touch-icon" href="turkey.png?v=2">
+  <link rel="icon" type="image/png" href="./turkey.png?v=3">
+  <link rel="apple-touch-icon" href="./turkey.png?v=3">
+
   <style>
     :root {
       --card: rgba(255, 255, 255, 0.88);
@@ -18,7 +19,16 @@
     }
 
     * { box-sizing: border-box; }
-    html, body { height: 100%; overflow: hidden; }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      touch-action: none;
+      overscroll-behavior: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
 
     body {
       margin: 0;
@@ -72,6 +82,7 @@
       display: inline-flex;
       align-items: center;
       gap: 7px;
+      touch-action: manipulation;
     }
 
     button.check { background: var(--blue); }
@@ -105,12 +116,12 @@
     .countdown.show { visibility: visible; }
 
     .board {
-      touch-action: none;
       flex: 1 1 auto;
       min-height: 0;
       display: grid;
       grid-template-rows: repeat(11, minmax(0, 1fr));
       gap: 6px;
+      touch-action: none;
     }
 
     .row {
@@ -128,29 +139,42 @@
       transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
       user-select: none;
       -webkit-user-select: none;
+      -webkit-touch-callout: none;
       touch-action: none;
     }
 
     .row.draggable { cursor: grab; }
     .row.draggable:active { cursor: grabbing; }
     .row.locked { cursor: default; }
+
     .row.flash-correct {
       border-color: var(--ok);
       background: rgba(220, 252, 231, 0.94);
     }
+
     .row.flash-wrong {
       border-color: var(--wrong);
       background: rgba(254, 226, 226, 0.94);
     }
+
     .row.dragging {
-      opacity: 0.55;
+      opacity: 0.25;
       transform: scale(0.99);
     }
 
-    .row.selected {
+    .row.drop-target {
       border-color: #2563eb;
       background: rgba(219, 234, 254, 0.96);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18), 0 4px 14px rgba(16, 24, 40, 0.10);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2), 0 4px 14px rgba(16, 24, 40, 0.10);
+    }
+
+    .drag-clone {
+      position: fixed;
+      z-index: 99999;
+      pointer-events: none;
+      opacity: 0.97;
+      transform: scale(1.03);
+      box-shadow: 0 18px 36px rgba(0,0,0,0.28);
     }
 
     .num {
@@ -185,28 +209,68 @@
       display: block;
       visibility: hidden;
     }
+
     #fireworks.show { visibility: visible; }
 
     @media (max-width: 700px) {
       body { padding: 7px; }
-      .wrap { width: calc(100vw - 14px); height: calc(100vh - 14px); gap: 6px; margin: 0 auto; }
-      .topbar { min-height: 40px; flex-basis: 40px; gap: 6px; }
+
+      .wrap {
+        width: calc(100vw - 14px);
+        height: calc(100vh - 14px);
+        gap: 6px;
+        margin: 0 auto;
+      }
+
+      .topbar {
+        min-height: 40px;
+        flex-basis: 40px;
+        gap: 6px;
+      }
+
       .controls { gap: 6px; }
-      button { padding: 8px 11px; font-size: 13px; height: 36px; }
-      .shuffle-icon { width: 16px; height: 16px; }
-      .countdown { width: 46px; height: 40px; font-size: 21px; }
+
+      button {
+        padding: 8px 11px;
+        font-size: 13px;
+        height: 36px;
+      }
+
+      .shuffle-icon {
+        width: 16px;
+        height: 16px;
+      }
+
+      .countdown {
+        width: 46px;
+        height: 40px;
+        font-size: 21px;
+      }
+
       .board { gap: 5px; }
+
       .row {
         grid-template-columns: 34px 1fr;
         gap: 6px;
         padding: 5px 6px;
         border-radius: 12px;
       }
-      .num { width: 28px; height: 28px; font-size: 12px; border-radius: 9px; }
-      .text { font-size: clamp(10px, 2.4vw, 13px); line-height: 1.15; }
+
+      .num {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+        border-radius: 9px;
+      }
+
+      .text {
+        font-size: clamp(10px, 2.4vw, 13px);
+        line-height: 1.15;
+      }
     }
   </style>
 </head>
+
 <body>
   <canvas id="fireworks"></canvas>
 
@@ -222,8 +286,10 @@
             <path d="M18 4l3 3-3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
+
         <button id="checkBtn" class="check">Kontrol Et (3)</button>
       </div>
+
       <div id="countdown" class="countdown" aria-live="polite">5</div>
     </div>
 
@@ -248,10 +314,7 @@
     const fixed = { id: 1, text: lines[0] };
     let order = [];
     let draggedId = null;
-    let selectedId = null;
-    let touchDragId = null;
-    let touchStartY = 0;
-    let lastTouchTargetIndex = null;
+    let touchDrag = null;
     let flashTimer = null;
     let countdownTimer = null;
     let checksLeft = 3;
@@ -266,10 +329,12 @@
 
     function shuffle(array) {
       const copy = [...array];
+
       for (let i = copy.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [copy[i], copy[j]] = [copy[j], copy[i]];
       }
+
       return copy;
     }
 
@@ -283,9 +348,9 @@
       clearFlash();
       stopFireworks();
       gameFrozen = false;
-      selectedId = null;
-      touchDragId = null;
       checksLeft = 3;
+      draggedId = null;
+      touchDrag = null;
       order = shuffle(lines.slice(1).map((text, index) => ({ id: index + 2, text })));
       updateCheckButton();
       render();
@@ -301,28 +366,28 @@
 
     function render() {
       board.innerHTML = "";
+
       currentRows().forEach((row, index) => {
         const card = document.createElement("article");
+
         card.className = "row";
         card.dataset.id = row.id;
         card.dataset.index = index;
-        if (selectedId === row.id) {
-          card.classList.add("selected");
-        }
 
         card.addEventListener("dragover", handleDragOver);
         card.addEventListener("drop", handleDrop);
-        card.addEventListener("click", handleTapMove);
-        card.addEventListener("touchstart", handleTouchStart, { passive: false });
-        card.addEventListener("touchmove", handleTouchMove, { passive: false });
-        card.addEventListener("touchend", handleTouchEnd, { passive: false });
-        card.addEventListener("touchcancel", handleTouchCancel, { passive: false });
 
         if (index > 0 && !gameFrozen) {
           card.classList.add("draggable");
+
           card.draggable = true;
           card.addEventListener("dragstart", handleDragStart);
           card.addEventListener("dragend", handleDragEnd);
+
+          card.addEventListener("pointerdown", handlePointerDown);
+          card.addEventListener("pointermove", handlePointerMove);
+          card.addEventListener("pointerup", handlePointerUp);
+          card.addEventListener("pointercancel", handlePointerCancel);
         } else {
           card.classList.add("locked");
         }
@@ -338,11 +403,15 @@
 
     function clearFlash() {
       if (gameFrozen) return;
+
       if (flashTimer) clearTimeout(flashTimer);
       if (countdownTimer) clearInterval(countdownTimer);
+
       flashTimer = null;
       countdownTimer = null;
+
       countdown.classList.remove("show");
+
       document.querySelectorAll(".row").forEach(card => {
         card.classList.remove("flash-correct", "flash-wrong");
       });
@@ -351,18 +420,22 @@
     function clearTimersOnly() {
       if (flashTimer) clearTimeout(flashTimer);
       if (countdownTimer) clearInterval(countdownTimer);
+
       flashTimer = null;
       countdownTimer = null;
+
       countdown.classList.remove("show");
     }
 
     function startCountdown() {
       let remaining = 5;
+
       countdown.textContent = remaining;
       countdown.classList.add("show");
 
       countdownTimer = setInterval(() => {
         remaining -= 1;
+
         if (remaining > 0) {
           countdown.textContent = remaining;
         } else {
@@ -376,6 +449,7 @@
     function paintCheckColors() {
       const rows = currentRows();
       const cards = [...document.querySelectorAll(".row")];
+
       cards.forEach((card, index) => {
         card.classList.add(rows[index].id === index + 1 ? "flash-correct" : "flash-wrong");
       });
@@ -384,13 +458,14 @@
     function freezeGame() {
       gameFrozen = true;
       draggedId = null;
-      selectedId = null;
-      touchDragId = null;
+      touchDrag = null;
+
       document.querySelectorAll(".row").forEach(card => {
         card.draggable = false;
-        card.classList.remove("draggable", "dragging");
+        card.classList.remove("draggable", "dragging", "drop-target");
         card.classList.add("locked");
       });
+
       checkBtn.disabled = true;
       shuffleBtn.disabled = true;
     }
@@ -421,6 +496,7 @@
       }
 
       startCountdown();
+
       flashTimer = setTimeout(() => {
         document.querySelectorAll(".row").forEach(card => {
           card.classList.remove("flash-correct", "flash-wrong");
@@ -428,11 +504,28 @@
       }, 5000);
     }
 
+    function moveItemToDisplayIndex(id, targetDisplayIndex) {
+      if (gameFrozen || id === null || targetDisplayIndex === 0) return false;
+
+      const from = order.findIndex(item => item.id === id);
+      const to = targetDisplayIndex - 1;
+
+      if (from === -1 || to === -1 || from === to) return false;
+
+      const [moved] = order.splice(from, 1);
+      order.splice(to, 0, moved);
+
+      return true;
+    }
+
     function handleDragStart(event) {
       if (gameFrozen) return;
+
       clearFlash();
+
       draggedId = Number(event.currentTarget.dataset.id);
       event.currentTarget.classList.add("dragging");
+
       event.dataTransfer.effectAllowed = "move";
       event.dataTransfer.setData("text/plain", String(draggedId));
     }
@@ -444,113 +537,123 @@
 
     function handleDragOver(event) {
       if (gameFrozen) return;
+
       event.preventDefault();
       event.dataTransfer.dropEffect = "move";
     }
 
-    function moveItemToDisplayIndex(id, targetDisplayIndex) {
-      if (gameFrozen || id === null || targetDisplayIndex === 0) return false;
-
-      const from = order.findIndex(item => item.id === id);
-      const to = targetDisplayIndex - 1;
-      if (from === -1 || to === -1 || from === to) return false;
-
-      const [moved] = order.splice(from, 1);
-      order.splice(to, 0, moved);
-      return true;
-    }
-
     function handleDrop(event) {
       if (gameFrozen) return;
+
       event.preventDefault();
+
       const targetDisplayIndex = Number(event.currentTarget.dataset.index);
+
       if (moveItemToDisplayIndex(draggedId, targetDisplayIndex)) {
-        selectedId = null;
         render();
       }
     }
 
-    function handleTapMove(event) {
+    function handlePointerDown(event) {
       if (gameFrozen) return;
-
-      const targetIndex = Number(event.currentTarget.dataset.index);
-      const targetId = Number(event.currentTarget.dataset.id);
-
-      if (targetIndex === 0) return;
+      if (event.pointerType === "mouse") return;
+      if (event.currentTarget.classList.contains("locked")) return;
 
       clearFlash();
 
-      if (selectedId === null) {
-        selectedId = targetId;
-        render();
-        return;
-      }
+      const card = event.currentTarget;
+      const rect = card.getBoundingClientRect();
 
-      if (selectedId === targetId) {
-        selectedId = null;
-        render();
-        return;
-      }
+      const clone = card.cloneNode(true);
+      clone.classList.add("drag-clone");
+      clone.style.left = rect.left + "px";
+      clone.style.top = rect.top + "px";
+      clone.style.width = rect.width + "px";
+      clone.style.height = rect.height + "px";
 
-      if (moveItemToDisplayIndex(selectedId, targetIndex)) {
-        selectedId = null;
-        render();
-      }
-    }
+      document.body.appendChild(clone);
 
-    function handleTouchStart(event) {
-      if (gameFrozen || event.currentTarget.classList.contains("locked")) return;
-      clearFlash();
+      touchDrag = {
+        id: Number(card.dataset.id),
+        pointerId: event.pointerId,
+        source: card,
+        clone: clone,
+        offsetX: event.clientX - rect.left,
+        offsetY: event.clientY - rect.top
+      };
 
-      const touch = event.touches[0];
-      touchDragId = Number(event.currentTarget.dataset.id);
-      touchStartY = touch.clientY;
-      lastTouchTargetIndex = Number(event.currentTarget.dataset.index);
-      event.currentTarget.classList.add("dragging");
+      card.classList.add("dragging");
+
+      try {
+        card.setPointerCapture(event.pointerId);
+      } catch (e) {}
+
       event.preventDefault();
     }
 
-    function handleTouchMove(event) {
-      if (gameFrozen || touchDragId === null) return;
+    function handlePointerMove(event) {
+      if (!touchDrag) return;
+      if (touchDrag.pointerId !== event.pointerId) return;
 
-      const touch = event.touches[0];
-      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      touchDrag.clone.style.left = (event.clientX - touchDrag.offsetX) + "px";
+      touchDrag.clone.style.top = (event.clientY - touchDrag.offsetY) + "px";
+
+      document.querySelectorAll(".row").forEach(row => {
+        row.classList.remove("drop-target");
+      });
+
+      const el = document.elementFromPoint(event.clientX, event.clientY);
       const target = el ? el.closest(".row") : null;
-      if (!target) return;
 
-      const targetIndex = Number(target.dataset.index);
-      if (!Number.isFinite(targetIndex) || targetIndex === 0) return;
-      if (targetIndex === lastTouchTargetIndex) return;
-
-      if (moveItemToDisplayIndex(touchDragId, targetIndex)) {
-        lastTouchTargetIndex = targetIndex;
-        render();
-        const active = document.querySelector(`.row[data-id="${touchDragId}"]`);
-        if (active) active.classList.add("dragging");
+      if (target && Number(target.dataset.index) !== 0) {
+        target.classList.add("drop-target");
       }
 
       event.preventDefault();
     }
 
-    function handleTouchEnd(event) {
-      if (touchDragId === null) return;
+    function handlePointerUp(event) {
+      if (!touchDrag) return;
+      if (touchDrag.pointerId !== event.pointerId) return;
 
-      document.querySelectorAll(".row").forEach(card => {
-        card.classList.remove("dragging");
+      const el = document.elementFromPoint(event.clientX, event.clientY);
+      const target = el ? el.closest(".row") : null;
+
+      const clone = touchDrag.clone;
+      const source = touchDrag.source;
+      const id = touchDrag.id;
+
+      if (clone) clone.remove();
+      if (source) source.classList.remove("dragging");
+
+      document.querySelectorAll(".row").forEach(row => {
+        row.classList.remove("drop-target");
       });
 
-      touchDragId = null;
-      lastTouchTargetIndex = null;
+      touchDrag = null;
+
+      if (target) {
+        const targetDisplayIndex = Number(target.dataset.index);
+
+        if (moveItemToDisplayIndex(id, targetDisplayIndex)) {
+          render();
+        }
+      }
+
       event.preventDefault();
     }
 
-    function handleTouchCancel(event) {
-      document.querySelectorAll(".row").forEach(card => {
-        card.classList.remove("dragging");
+    function handlePointerCancel(event) {
+      if (!touchDrag) return;
+
+      if (touchDrag.clone) touchDrag.clone.remove();
+      if (touchDrag.source) touchDrag.source.classList.remove("dragging");
+
+      document.querySelectorAll(".row").forEach(row => {
+        row.classList.remove("drop-target");
       });
 
-      touchDragId = null;
-      lastTouchTargetIndex = null;
+      touchDrag = null;
     }
 
     let particles = [];
@@ -563,9 +666,11 @@
 
     function makeBurst(x, y) {
       const colors = ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#a855f7"];
+
       for (let i = 0; i < 70; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 2 + Math.random() * 4;
+
         particles.push({
           x,
           y,
@@ -581,19 +686,26 @@
 
     function startFireworks() {
       resizeFireworks();
+
       fireworksCanvas.classList.add("show");
       fireworksCanvas.style.visibility = "visible";
+
       particles = [];
+
       makeBurst(window.innerWidth * 0.30, window.innerHeight * 0.28);
       makeBurst(window.innerWidth * 0.55, window.innerHeight * 0.20);
       makeBurst(window.innerWidth * 0.78, window.innerHeight * 0.32);
 
       let frames = 0;
+
       function animate() {
         frames += 1;
+
         fireworksCtx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
 
-        if (frames === 35) makeBurst(window.innerWidth * 0.45, window.innerHeight * 0.38);
+        if (frames === 35) {
+          makeBurst(window.innerWidth * 0.45, window.innerHeight * 0.38);
+        }
 
         particles.forEach(p => {
           p.age += 1;
@@ -604,6 +716,7 @@
           p.vy *= 0.985;
 
           const alpha = Math.max(0, 1 - p.age / p.life);
+
           fireworksCtx.globalAlpha = alpha;
           fireworksCtx.fillStyle = p.color;
           fireworksCtx.beginPath();
@@ -620,21 +733,27 @@
           fireworksAnimation = null;
         }
       }
+
       animate();
     }
 
     function stopFireworks() {
       if (fireworksAnimation) cancelAnimationFrame(fireworksAnimation);
+
       fireworksAnimation = null;
       particles = [];
+
       fireworksCanvas.classList.remove("show");
       fireworksCanvas.style.visibility = "hidden";
+
       fireworksCtx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
     }
 
     window.addEventListener("resize", resizeFireworks);
+
     checkBtn.addEventListener("click", checkOrder);
     shuffleBtn.addEventListener("click", startGame);
+
     startGame();
   </script>
 </body>
