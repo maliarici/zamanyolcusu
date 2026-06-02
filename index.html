@@ -9,7 +9,7 @@
 
   <style>
     :root {
-      --card: rgba(255,255,255,.92);
+      --card: rgba(255,255,255,.93);
       --text: #17202a;
       --line: rgba(208,213,221,.9);
       --blue: #2563eb;
@@ -39,11 +39,10 @@
         #e5e7eb;
       color: var(--text);
       padding: 4px;
-      touch-action: none;
     }
 
     .wrap {
-      width: min(760px, calc(100vw - 8px));
+      width: min(780px, calc(100vw - 8px));
       height: calc(var(--app-height, 100vh) - 8px);
       margin: 0 auto;
       display: flex;
@@ -140,13 +139,12 @@
       cursor: grab;
     }
 
-    .row.locked {
-      cursor: default;
-    }
+    .row.locked { cursor: default; }
 
     .row.dragging {
       opacity: .25;
       transform: scale(.99);
+      cursor: grabbing;
     }
 
     .row.drop-target {
@@ -192,9 +190,9 @@
     .flash-wrong .num { background: #fecaca; color: #991b1b; }
 
     .text {
-      font-size: clamp(15px, 2.15vh, 21px);
-      line-height: 1.2;
-      font-weight: 800;
+      font-size: clamp(15px, 2.05vh, 21px);
+      line-height: 1.18;
+      font-weight: 850;
       word-break: normal;
       overflow: visible;
       pointer-events: none;
@@ -226,9 +224,9 @@
       }
 
       .text {
-        font-size: clamp(13px, 1.95vh, 18px);
-        line-height: 1.18;
-        font-weight: 800;
+        font-size: clamp(13px, 1.85vh, 18px);
+        line-height: 1.16;
+        font-weight: 850;
       }
     }
   </style>
@@ -285,6 +283,7 @@
       const cy = 32;
       const outer = 10;
       const inner = 4;
+
       for (let i = 0; i < 10; i++) {
         const angle = -Math.PI / 2 + i * Math.PI / 5;
         const r = i % 2 === 0 ? outer : inner;
@@ -293,11 +292,11 @@
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
+
       ctx.closePath();
       ctx.fill();
 
-      const oldIcons = document.querySelectorAll("link[rel~='icon'], link[rel='shortcut icon']");
-      oldIcons.forEach(icon => icon.remove());
+      document.querySelectorAll("link[rel~='icon'], link[rel='shortcut icon']").forEach(icon => icon.remove());
 
       const icon = document.createElement("link");
       icon.rel = "icon";
@@ -392,7 +391,8 @@
 
         if (index > 0 && !gameFrozen) {
           card.classList.add("draggable");
-          card.addEventListener("pointerdown", handlePointerDown);
+          card.addEventListener("mousedown", handleMouseDown);
+          card.addEventListener("touchstart", handleTouchStart, { passive: false });
         } else {
           card.classList.add("locked");
         }
@@ -437,6 +437,7 @@
 
       countdownTimer = setInterval(() => {
         remaining -= 1;
+
         if (remaining > 0) {
           countdown.textContent = remaining;
         } else {
@@ -517,20 +518,9 @@
       return true;
     }
 
-    function handlePointerDown(event) {
-      if (gameFrozen) return;
-      if (event.button !== undefined && event.button !== 0) return;
-      if (event.currentTarget.classList.contains("locked")) return;
+    function startDrag(card, clientX, clientY) {
+      if (gameFrozen || card.classList.contains("locked")) return;
 
-      event.preventDefault();
-      startDrag(event.currentTarget, event.clientX, event.clientY, event.pointerId);
-
-      try {
-        event.currentTarget.setPointerCapture(event.pointerId);
-      } catch (e) {}
-    }
-
-    function startDrag(card, clientX, clientY, pointerId) {
       clearFlash();
 
       const rect = card.getBoundingClientRect();
@@ -549,10 +539,11 @@
         id: Number(card.dataset.id),
         source: card,
         clone,
-        pointerId,
         offsetX: clientX - rect.left,
         offsetY: clientY - rect.top
       };
+
+      document.body.style.cursor = "grabbing";
     }
 
     function moveDrag(clientX, clientY) {
@@ -584,6 +575,7 @@
 
       if (target) {
         const targetDisplayIndex = Number(target.dataset.index);
+
         if (moveItemToDisplayIndex(id, targetDisplayIndex)) {
           render();
         }
@@ -601,25 +593,51 @@
       });
 
       activeDrag = null;
+      document.body.style.cursor = "";
     }
 
-    window.addEventListener("pointermove", event => {
-      if (!activeDrag) return;
-      if (activeDrag.pointerId !== event.pointerId) return;
+    function handleMouseDown(event) {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      startDrag(event.currentTarget, event.clientX, event.clientY);
+    }
 
+    window.addEventListener("mousemove", event => {
+      if (!activeDrag) return;
       event.preventDefault();
       moveDrag(event.clientX, event.clientY);
     }, { passive: false });
 
-    window.addEventListener("pointerup", event => {
+    window.addEventListener("mouseup", event => {
       if (!activeDrag) return;
-      if (activeDrag.pointerId !== event.pointerId) return;
-
       event.preventDefault();
       endDrag(event.clientX, event.clientY);
     }, { passive: false });
 
-    window.addEventListener("pointercancel", () => {
+    function handleTouchStart(event) {
+      const touch = event.touches[0];
+      if (!touch) return;
+      event.preventDefault();
+      startDrag(event.currentTarget, touch.clientX, touch.clientY);
+    }
+
+    window.addEventListener("touchmove", event => {
+      if (!activeDrag) return;
+      const touch = event.touches[0];
+      if (!touch) return;
+      event.preventDefault();
+      moveDrag(touch.clientX, touch.clientY);
+    }, { passive: false });
+
+    window.addEventListener("touchend", event => {
+      if (!activeDrag) return;
+      const touch = event.changedTouches[0];
+      if (!touch) return;
+      event.preventDefault();
+      endDrag(touch.clientX, touch.clientY);
+    }, { passive: false });
+
+    window.addEventListener("touchcancel", () => {
       cleanupDrag();
     });
 
@@ -715,7 +733,7 @@
 
     window.addEventListener("resize", resizeFireworks);
 
-    checkBtn.addEventListener("click", start => checkOrder());
+    checkBtn.addEventListener("click", checkOrder);
     shuffleBtn.addEventListener("click", startGame);
 
     startGame();
